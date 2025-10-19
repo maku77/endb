@@ -1,0 +1,13 @@
+name = "endb-backend"
+main = "src/index.ts"
+compatibility_date = "2024-10-19"
+
+# D1 データベース設定
+[[d1_databases]]
+binding = "DB"
+database_name = "endb"
+database_id = "3bc2c695-77e5-44a3-9f8c-6022ee18ef2f"  # wrangler d1 create endb で作成後に置き換え
+
+# CORS設定用の環境変数
+[vars]
+ALLOWED_ORIGIN = "http://localhost:5173"  # 開発時のフロントエンドURL
