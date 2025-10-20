@@ -1,5 +1,16 @@
 <script lang="ts">
   import '../styles/global.scss';
+  import { authStore } from '$lib/stores/auth';
+  import { goto } from '$app/navigation';
+
+  // Derived: ログイン状態を取得
+  let isLoggedIn = $derived($authStore !== null);
+
+  // Functions
+  function handleLogout() {
+    authStore.logout();
+    goto('/login');
+  }
 </script>
 
 <div class="app">
@@ -11,6 +22,11 @@
         <li><a href="/categories" class="nav__link">カテゴリ</a></li>
         <li><a href="/study" class="nav__link">学習</a></li>
         <li><a href="/stats" class="nav__link">統計</a></li>
+        {#if isLoggedIn}
+          <li><button class="nav__link nav__link--button" onclick={handleLogout}>ログアウト</button></li>
+        {:else}
+          <li><a href="/login" class="nav__link">ログイン</a></li>
+        {/if}
       </ul>
     </div>
   </nav>
@@ -73,6 +89,13 @@
       &:hover {
         color: $color-primary;
         text-decoration: none;
+      }
+
+      &--button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
       }
     }
   }

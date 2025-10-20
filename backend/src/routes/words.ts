@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { Env, CreateWordRequest, UpdateWordRequest } from '../types';
 import * as db from '../db';
+import { authMiddleware } from '../middleware/auth';
 
 const words = new Hono<{ Bindings: Env }>();
 
@@ -32,8 +33,8 @@ words.get('/:id', async (c) => {
   return c.json(word);
 });
 
-// 単語登録
-words.post('/', async (c) => {
+// 単語登録（認証が必要）
+words.post('/', authMiddleware, async (c) => {
   const body = await c.req.json<CreateWordRequest>();
 
   // バリデーション
@@ -47,8 +48,8 @@ words.post('/', async (c) => {
   return c.json(word, 201);
 });
 
-// 単語更新
-words.put('/:id', async (c) => {
+// 単語更新（認証が必要）
+words.put('/:id', authMiddleware, async (c) => {
   const id = parseInt(c.req.param('id'));
   const body = await c.req.json<UpdateWordRequest>();
 
@@ -66,8 +67,8 @@ words.put('/:id', async (c) => {
   return c.json(updatedWord);
 });
 
-// 単語削除
-words.delete('/:id', async (c) => {
+// 単語削除（認証が必要）
+words.delete('/:id', authMiddleware, async (c) => {
   const id = parseInt(c.req.param('id'));
 
   const word = await db.getWordById(c.env.DB, id);

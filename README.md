@@ -5,6 +5,7 @@
 - 📝 **単語管理**: 英単語の登録、編集、削除、検索
 - 🏷️ **カテゴリ管理**: 単語をカテゴリ別に整理
 - 📊 **学習記録**: 復習回数、正答率、習熟度の追跡
+- 🔐 **管理者認証**: JWT認証による単語管理機能の保護
 - 📱 **レスポンシブデザイン**: モバイル・タブレット・デスクトップ対応
 
 ## 技術スタック
@@ -30,13 +31,17 @@ endb/
 │   │   ├── index.ts        # メインエントリポイント
 │   │   ├── types.ts        # 型定義
 │   │   ├── db.ts           # データベース操作
+│   │   ├── middleware/
+│   │   │   └── auth.ts     # JWT認証ミドルウェア
 │   │   └── routes/         # APIルート
+│   │       ├── auth.ts     # 認証API
 │   │       ├── words.ts    # 単語API
 │   │       ├── categories.ts # カテゴリAPI
 │   │       ├── study.ts    # 学習API
 │   │       └── stats.ts    # 統計API
 │   ├── migrations/
 │   │   └── 0001_initial.sql # 初期スキーマ
+│   ├── .dev.vars.example   # 開発環境変数のサンプル
 │   ├── wrangler.toml       # Workers設定
 │   └── package.json
 ├── frontend/                # SvelteKit アプリ
@@ -44,11 +49,14 @@ endb/
 │   │   ├── routes/         # ページ
 │   │   │   ├── +layout.svelte
 │   │   │   ├── +page.svelte # 単語一覧
+│   │   │   ├── login/       # ログインページ
 │   │   │   ├── categories/  # カテゴリ管理
 │   │   │   ├── study/       # 学習ページ（未実装）
 │   │   │   └── stats/       # 統計ページ（未実装）
 │   │   ├── lib/
 │   │   │   ├── components/ # UIコンポーネント
+│   │   │   ├── stores/
+│   │   │   │   └── auth.ts # 認証ストア
 │   │   │   ├── types.ts    # 型定義
 │   │   │   └── api.ts      # APIクライアント
 │   │   └── styles/         # SCSS
@@ -95,7 +103,55 @@ endb/
    pnpm wrangler d1 execute endb --file=./migrations/0001_initial.sql
    ```
 
-4. **開発サーバーの起動**
+4. **認証機能の設定（重要）**
+
+   単語・カテゴリの作成・編集・削除には管理者認証が必要です。
+
+   **ローカル開発環境:**
+   ```bash
+   # サンプルファイルをコピー
+   cp .dev.vars.example .dev.vars
+
+   # .dev.vars ファイルを編集して認証情報を設定
+   ```
+
+   `.dev.vars` の内容例：
+   ```bash
+   # 管理者のユーザー名とパスワードを設定
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=your-secure-password-here
+
+   # JWT署名用の秘密鍵（ランダムな長い文字列を設定）
+   JWT_SECRET=your-random-secret-key-at-least-32-characters-long
+   ```
+
+   **JWT_SECRETの生成例:**
+   ```bash
+   # Nodeで生成
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+   # OpenSSLで生成
+   openssl rand -hex 32
+   ```
+
+   > ⚠️ **重要**: `.dev.vars` ファイルは `.gitignore` で除外されているため、Gitにコミットされません。
+
+   **本番環境（Cloudflare Workers）:**
+   ```bash
+   # Wranglerを使って本番環境のシークレットを設定
+   wrangler secret put ADMIN_USERNAME
+   # プロンプトに従って管理者ユーザー名を入力
+
+   wrangler secret put ADMIN_PASSWORD
+   # プロンプトに従って安全なパスワードを入力
+
+   wrangler secret put JWT_SECRET
+   # プロンプトに従ってJWT秘密鍵を入力
+   ```
+
+   設定したシークレットは Cloudflare ダッシュボードの Workers & Pages > あなたのWorker > Settings > Variables で確認できます。
+
+5. **開発サーバーの起動**
    ```bash
    pnpm dev
    ```
@@ -117,22 +173,43 @@ endb/
 
    アプリケーションは `http://localhost:5173` で起動します。
 
+## ログインと認証
+
+### 初回ログイン
+
+1. ブラウザで `http://localhost:5173/login` にアクセス
+2. バックエンドの `.dev.vars` で設定した `ADMIN_USERNAME` と `ADMIN_PASSWORD` を入力
+3. ログイン成功後、単語・カテゴリの作成・編集・削除が可能になります
+
+### 認証が必要な操作
+
+- ✅ **認証不要**: 単語・カテゴリの閲覧、学習機能
+- 🔒 **認証必要**: 単語・カテゴリの作成、編集、削除
+
+### トークンの有効期限
+
+- JWTトークンの有効期限: **24時間**
+- 期限切れ後は自動的にログアウトされ、再ログインが必要です
+
 ## API エンドポイント
+
+### 認証
+- `POST /api/auth/login` - ログイン（トークン発行）
 
 ### 単語管理
 - `GET /api/words` - 単語一覧取得
   - クエリパラメータ: `search`, `category_id`, `mastery_level`
 - `GET /api/words/:id` - 単語詳細取得
-- `POST /api/words` - 単語登録
-- `PUT /api/words/:id` - 単語更新
-- `DELETE /api/words/:id` - 単語削除
+- `POST /api/words` - 単語登録 🔒
+- `PUT /api/words/:id` - 単語更新 🔒
+- `DELETE /api/words/:id` - 単語削除 🔒
 
 ### カテゴリ管理
 - `GET /api/categories` - カテゴリ一覧取得
 - `GET /api/categories/:id` - カテゴリ詳細取得
-- `POST /api/categories` - カテゴリ作成
-- `PUT /api/categories/:id` - カテゴリ更新
-- `DELETE /api/categories/:id` - カテゴリ削除
+- `POST /api/categories` - カテゴリ作成 🔒
+- `PUT /api/categories/:id` - カテゴリ更新 🔒
+- `DELETE /api/categories/:id` - カテゴリ削除 🔒
 
 ### 学習機能
 - `GET /api/study/random?count=10` - ランダムに単語取得
@@ -174,10 +251,20 @@ endb/
 
 ### バックエンド（Workers）のデプロイ
 
-```bash
-cd backend
-pnpm deploy
-```
+1. **本番環境のシークレットを設定**（初回のみ）
+   ```bash
+   cd backend
+
+   # 管理者認証情報を設定
+   wrangler secret put ADMIN_USERNAME
+   wrangler secret put ADMIN_PASSWORD
+   wrangler secret put JWT_SECRET
+   ```
+
+2. **デプロイ実行**
+   ```bash
+   pnpm deploy
+   ```
 
 ### フロントエンド（Pages）のデプロイ
 

@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Wrangler local state
 .wrangler/
+
+# Cloudflare Workers development secrets
+.dev.vars

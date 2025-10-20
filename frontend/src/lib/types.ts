@@ -49,3 +49,15 @@ export type Stats = {
   review_needed: number;
   total_sessions: number;
 };
+
+// 認証関連の型定義
+
+export type LoginRequest = {
+  username: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  token: string;
+  expiresIn: number;
+};

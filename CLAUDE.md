@@ -88,3 +88,168 @@ Three main tables:
 - **Mastery Level Algorithm**: In `backend/src/db.ts:recordStudySession()`, correct answers add 1 to mastery_level (capped at 5), incorrect answers subtract 1 (floored at 0)
 - **Dynamic SQL Queries**: Both `updateWord` and `updateCategory` functions build dynamic SQL with only the provided fields
 - **Foreign Key Cascades**: Deleting a category sets word.category_id to NULL; deleting a word cascades to study_sessions
+- **Authentication**: JWT-based authentication protects word/category creation, update, and deletion. Read operations remain public.
+
+## Svelte 5 Coding Standards
+
+This project uses **Svelte 5** with the modern **Runes API**. Follow these guidelines when writing Svelte components:
+
+### Reactive State Management
+
+**Use Runes API (Svelte 5)** instead of legacy stores for component-level state:
+
+```svelte
+<script lang="ts">
+  // ✅ CORRECT: Use $state() for reactive variables
+  let count = $state(0);
+  let user = $state({ name: 'Alice', age: 30 });
+
+  // ✅ CORRECT: Use $derived() for computed values
+  let doubled = $derived(count * 2);
+  let greeting = $derived(`Hello, ${user.name}!`);
+
+  // ✅ CORRECT: Use $effect() for side effects
+  $effect(() => {
+    console.log(`Count changed to: ${count}`);
+  });
+</script>
+
+<!-- ❌ WRONG: Don't use legacy reactive declarations -->
+<!-- $: doubled = count * 2 -->
+```
+
+### Component Props
+
+**Use $props() rune** for component properties:
+
+```svelte
+<script lang="ts">
+  // ✅ CORRECT: Destructure props with $props()
+  let { title, count = 0, onUpdate } = $props<{
+    title: string;
+    count?: number;
+    onUpdate?: (value: number) => void;
+  }>();
+
+  // ✅ CORRECT: Use $bindable() for two-way binding
+  let { value = $bindable(0) } = $props<{ value?: number }>();
+</script>
+
+<!-- ❌ WRONG: Don't use export let -->
+<!-- export let title: string; -->
+```
+
+### Event Handlers
+
+Use standard DOM event handling without custom event dispatchers:
+
+```svelte
+<script lang="ts">
+  let { onSubmit } = $props<{
+    onSubmit?: (data: FormData) => void;
+  }>();
+
+  function handleSubmit() {
+    const data = new FormData();
+    onSubmit?.(data);
+  }
+</script>
+
+<button onclick={handleSubmit}>Submit</button>
+
+<!-- ❌ WRONG: Don't use createEventDispatcher -->
+```
+
+### Stores (When to Use)
+
+Use **Svelte stores** only for **global state** that needs to be shared across multiple components:
+
+```typescript
+// ✅ CORRECT: Use stores for global state like authentication
+// frontend/src/lib/stores/auth.ts
+import { writable } from 'svelte/store';
+
+export const authStore = writable<string | null>(null);
+```
+
+```svelte
+<script lang="ts">
+  import { authStore } from '$lib/stores/auth';
+
+  // ✅ CORRECT: Subscribe to stores with $ prefix
+  let isLoggedIn = $derived($authStore !== null);
+</script>
+```
+
+**Note**: For component-local state, always prefer `$state()` over stores.
+
+### TypeScript Integration
+
+Always use TypeScript with proper type annotations:
+
+```svelte
+<script lang="ts">
+  import type { Word } from '$lib/types';
+
+  let { words } = $props<{ words: Word[] }>();
+  let selectedWord = $state<Word | null>(null);
+  let filteredWords = $derived(
+    words.filter(w => w.mastery_level < 3)
+  );
+</script>
+```
+
+### Component Structure Best Practices
+
+1. **State declarations** at the top
+2. **Derived values** after state
+3. **Effects** after derived values
+4. **Functions** at the bottom of script block
+
+```svelte
+<script lang="ts">
+  // 1. Props
+  let { initialCount = 0 } = $props<{ initialCount?: number }>();
+
+  // 2. State
+  let count = $state(initialCount);
+  let items = $state<string[]>([]);
+
+  // 3. Derived values
+  let doubled = $derived(count * 2);
+  let isEmpty = $derived(items.length === 0);
+
+  // 4. Effects
+  $effect(() => {
+    console.log('Count:', count);
+  });
+
+  // 5. Functions
+  function increment() {
+    count++;
+  }
+
+  function addItem(item: string) {
+    items = [...items, item];
+  }
+</script>
+```
+
+### Migration Notes
+
+If you encounter **legacy Svelte 4 syntax** in existing components:
+
+- `export let prop` → `let { prop } = $props()`
+- `$: derived = expression` → `let derived = $derived(expression)`
+- `$: { effect }` → `$effect(() => { effect })`
+- Component stores → Consider if global state is needed, otherwise use `$state()`
+
+### Key Differences from Svelte 4
+
+| Svelte 4 | Svelte 5 |
+|----------|----------|
+| `export let count = 0` | `let { count = 0 } = $props()` |
+| `$: doubled = count * 2` | `let doubled = $derived(count * 2)` |
+| `$: { console.log(count) }` | `$effect(() => console.log(count))` |
+| `let count = 0` (not reactive) | `let count = $state(0)` |
+| `createEventDispatcher()` | Pass callbacks via props |

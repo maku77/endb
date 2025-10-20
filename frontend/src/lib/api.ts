@@ -7,17 +7,46 @@ import type {
   UpdateCategoryInput,
   StudyResult,
   Stats,
+  LoginRequest,
+  LoginResponse,
 } from './types';
+import { authStore } from './stores/auth';
 
 const API_BASE_URL = 'http://localhost:8787'; // Cloudflare Workers デフォルトポート
 
 // ヘルパー関数
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    // 401エラーの場合は自動ログアウト
+    if (response.status === 401) {
+      authStore.logout();
+    }
     const error = await response.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(error.error || `HTTP error! status: ${response.status}`);
   }
   return response.json();
+}
+
+// Authorizationヘッダーを追加するヘルパー
+function getAuthHeaders(): HeadersInit {
+  const token = authStore.getToken();
+  return token
+    ? {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      }
+    : { 'Content-Type': 'application/json' };
+}
+
+// 認証関連のAPI
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password } as LoginRequest),
+  });
+  return handleResponse<LoginResponse>(response);
 }
 
 // 単語関連のAPI
@@ -46,7 +75,7 @@ export async function getWord(id: number): Promise<Word> {
 export async function createWord(data: CreateWordInput): Promise<Word> {
   const response = await fetch(`${API_BASE_URL}/api/words`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return handleResponse<Word>(response);
@@ -55,7 +84,7 @@ export async function createWord(data: CreateWordInput): Promise<Word> {
 export async function updateWord(id: number, data: UpdateWordInput): Promise<Word> {
   const response = await fetch(`${API_BASE_URL}/api/words/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return handleResponse<Word>(response);
@@ -64,6 +93,7 @@ export async function updateWord(id: number, data: UpdateWordInput): Promise<Wor
 export async function deleteWord(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/words/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   await handleResponse<{ message: string }>(response);
 }
@@ -83,7 +113,7 @@ export async function getCategory(id: number): Promise<Category> {
 export async function createCategory(data: CreateCategoryInput): Promise<Category> {
   const response = await fetch(`${API_BASE_URL}/api/categories`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return handleResponse<Category>(response);
@@ -92,7 +122,7 @@ export async function createCategory(data: CreateCategoryInput): Promise<Categor
 export async function updateCategory(id: number, data: UpdateCategoryInput): Promise<Category> {
   const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return handleResponse<Category>(response);
@@ -101,6 +131,7 @@ export async function updateCategory(id: number, data: UpdateCategoryInput): Pro
 export async function deleteCategory(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   await handleResponse<{ message: string }>(response);
 }

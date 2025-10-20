@@ -6,6 +6,7 @@ import words from './routes/words';
 import categories from './routes/categories';
 import study from './routes/study';
 import stats from './routes/stats';
+import auth from './routes/auth';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -15,7 +16,7 @@ app.use(
   cors({
     origin: (origin) => origin, // 開発時は全てのオリジンを許可
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type'],
+    allowHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -34,6 +35,7 @@ app.get('/', (c) => {
 });
 
 // APIルート
+app.route('/api/auth', auth);
 app.route('/api/words', words);
 app.route('/api/categories', categories);
 app.route('/api/study', study);

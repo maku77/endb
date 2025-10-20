@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { Category } from '$lib/types';
   import * as api from '$lib/api';
 
-  let categories: Category[] = [];
-  let loading = true;
-  let error = '';
+  // State
+  let categories = $state<Category[]>([]);
+  let loading = $state(true);
+  let error = $state('');
+  let showForm = $state(false);
+  let editingCategory = $state<Category | null>(null);
+  let name = $state('');
+  let color = $state('#3b82f6');
+  let description = $state('');
+  let formErrors = $state<Record<string, string>>({});
 
-  let showForm = false;
-  let editingCategory: Category | null = null;
-
-  let name = '';
-  let color = '#3b82f6';
-  let description = '';
-  let formErrors: Record<string, string> = {};
-
-  onMount(async () => {
-    await loadCategories();
+  // Effects
+  $effect(() => {
+    loadCategories();
   });
 
+  // Functions
   async function loadCategories() {
     try {
       loading = true;
@@ -112,7 +112,7 @@
 <div class="page">
   <header class="page-header">
     <h1 class="page-title">カテゴリ管理</h1>
-    <button class="btn btn--primary" on:click={handleNew}>
+    <button class="btn btn--primary" onclick={handleNew}>
       + 新しいカテゴリを追加
     </button>
   </header>
@@ -124,7 +124,7 @@
   {#if showForm}
     <div class="form-container">
       <h2 class="form-title">{editingCategory ? 'カテゴリを編集' : '新しいカテゴリを作成'}</h2>
-      <form class="category-form" on:submit={handleSubmit}>
+      <form class="category-form" onsubmit={handleSubmit}>
         <div class="form-group">
           <label for="name" class="form-label">カテゴリ名 *</label>
           <input
@@ -168,7 +168,7 @@
           <button type="submit" class="btn btn--primary">
             {editingCategory ? '更新' : '作成'}
           </button>
-          <button type="button" class="btn btn--secondary" on:click={handleCancel}>
+          <button type="button" class="btn btn--secondary" onclick={handleCancel}>
             キャンセル
           </button>
         </div>
@@ -181,7 +181,7 @@
   {:else if categories.length === 0}
     <div class="empty">
       <p>カテゴリが登録されていません。</p>
-      <button class="btn btn--primary" on:click={handleNew}>
+      <button class="btn btn--primary" onclick={handleNew}>
         最初のカテゴリを作成する
       </button>
     </div>
@@ -203,10 +203,10 @@
               </div>
             </div>
             <div class="category-card__actions">
-              <button class="btn btn--secondary" on:click={() => handleEdit(category)}>
+              <button class="btn btn--secondary" onclick={() => handleEdit(category)}>
                 編集
               </button>
-              <button class="btn btn--danger" on:click={() => handleDelete(category)}>
+              <button class="btn btn--danger" onclick={() => handleDelete(category)}>
                 削除
               </button>
             </div>

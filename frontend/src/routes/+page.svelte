@@ -1,25 +1,26 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import type { Word, Category } from '$lib/types';
   import * as api from '$lib/api';
   import WordCard from '$lib/components/WordCard.svelte';
   import WordForm from '$lib/components/WordForm.svelte';
 
-  let words: Word[] = [];
-  let categories: Category[] = [];
-  let loading = true;
-  let error = '';
-  let searchQuery = '';
-  let selectedCategory: number | undefined;
-  let selectedMastery: number | undefined;
+  // State
+  let words = $state<Word[]>([]);
+  let categories = $state<Category[]>([]);
+  let loading = $state(true);
+  let error = $state('');
+  let searchQuery = $state('');
+  let selectedCategory = $state<number | undefined>(undefined);
+  let selectedMastery = $state<number | undefined>(undefined);
+  let showForm = $state(false);
+  let editingWord = $state<Word | null>(null);
 
-  let showForm = false;
-  let editingWord: Word | null = null;
-
-  onMount(async () => {
-    await loadData();
+  // Effects
+  $effect(() => {
+    loadData();
   });
 
+  // Functions
   async function loadData() {
     try {
       loading = true;
@@ -93,7 +94,7 @@
 <div class="page">
   <header class="page-header">
     <h1 class="page-title">単語一覧</h1>
-    <button class="btn btn--primary" on:click={handleNewWord}>
+    <button class="btn btn--primary" onclick={handleNewWord}>
       + 新しい単語を追加
     </button>
   </header>
@@ -108,8 +109,8 @@
       <WordForm
         {categories}
         word={editingWord}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
+        {handleSubmit}
+        {handleCancel}
       />
     </div>
   {/if}
@@ -121,20 +122,20 @@
         class="filter-input"
         bind:value={searchQuery}
         placeholder="単語を検索..."
-        on:keyup={(e) => e.key === 'Enter' && handleSearch()}
+        onkeyup={(e) => e.key === 'Enter' && handleSearch()}
       />
-      <button class="btn btn--secondary" on:click={handleSearch}>検索</button>
+      <button class="btn btn--secondary" onclick={handleSearch}>検索</button>
     </div>
 
     <div class="filter-group">
-      <select class="filter-select" bind:value={selectedCategory} on:change={handleSearch}>
+      <select class="filter-select" bind:value={selectedCategory} onchange={handleSearch}>
         <option value={undefined}>全カテゴリ</option>
         {#each categories as category}
           <option value={category.id}>{category.name}</option>
         {/each}
       </select>
 
-      <select class="filter-select" bind:value={selectedMastery} on:change={handleSearch}>
+      <select class="filter-select" bind:value={selectedMastery} onchange={handleSearch}>
         <option value={undefined}>全レベル</option>
         <option value={0}>未学習</option>
         <option value={1}>初級</option>
@@ -151,7 +152,7 @@
   {:else if words.length === 0}
     <div class="empty">
       <p>単語が登録されていません。</p>
-      <button class="btn btn--primary" on:click={handleNewWord}>
+      <button class="btn btn--primary" onclick={handleNewWord}>
         最初の単語を登録する
       </button>
     </div>
@@ -161,8 +162,8 @@
         <WordCard
           {word}
           category={getCategoryById(word.category_id)}
-          onEdit={() => handleEdit(word)}
-          onDelete={() => handleDelete(word)}
+          handleEdit={() => handleEdit(word)}
+          handleDelete={() => handleDelete(word)}
         />
       {/each}
     </div>

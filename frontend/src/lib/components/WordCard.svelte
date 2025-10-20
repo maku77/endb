@@ -1,25 +1,29 @@
 <script lang="ts">
   import type { Word, Category } from '../types';
 
-  export let word: Word;
-  export let category: Category | null = null;
-  export let onEdit: (() => void) | null = null;
-  export let onDelete: (() => void) | null = null;
+  // Props
+  let { word, category = null, handleEdit, handleDelete } = $props<{
+    word: Word;
+    category?: Category | null;
+    handleEdit?: () => void;
+    handleDelete?: () => void;
+  }>();
 
+  // Constants
   const masteryLabels = ['未学習', '初級', '中級', '中上級', '上級', '習得済み'];
   const masteryColors = ['#9ca3af', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#059669'];
 
-  function getMasteryInfo(level: number) {
-    return {
-      label: masteryLabels[level] || '未学習',
-      color: masteryColors[level] || masteryColors[0],
-    };
-  }
+  // Derived
+  let mastery = $derived({
+    label: masteryLabels[word.mastery_level] || '未学習',
+    color: masteryColors[word.mastery_level] || masteryColors[0],
+  });
 
-  const mastery = getMasteryInfo(word.mastery_level);
-  const accuracy = word.review_count > 0
-    ? Math.round((word.correct_count / word.review_count) * 100)
-    : 0;
+  let accuracy = $derived(
+    word.review_count > 0
+      ? Math.round((word.correct_count / word.review_count) * 100)
+      : 0
+  );
 </script>
 
 <div class="word-card">
@@ -65,13 +69,13 @@
     </div>
   </div>
 
-  {#if onEdit || onDelete}
+  {#if handleEdit || handleDelete}
     <div class="word-card__actions">
-      {#if onEdit}
-        <button class="btn btn--secondary" on:click={onEdit}>編集</button>
+      {#if handleEdit}
+        <button class="btn btn--secondary" onclick={handleEdit}>編集</button>
       {/if}
-      {#if onDelete}
-        <button class="btn btn--danger" on:click={onDelete}>削除</button>
+      {#if handleDelete}
+        <button class="btn btn--danger" onclick={handleDelete}>削除</button>
       {/if}
     </div>
   {/if}

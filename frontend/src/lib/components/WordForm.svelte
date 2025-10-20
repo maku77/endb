@@ -1,19 +1,23 @@
 <script lang="ts">
   import type { Word, Category, CreateWordInput } from '../types';
 
-  export let categories: Category[] = [];
-  export let word: Word | null = null;
-  export let onSubmit: (data: CreateWordInput) => void;
-  export let onCancel: (() => void) | null = null;
+  // Props
+  let { categories = [], word = null, handleSubmit: onSubmit, handleCancel } = $props<{
+    categories?: Category[];
+    word?: Word | null;
+    handleSubmit: (data: CreateWordInput) => void;
+    handleCancel?: () => void;
+  }>();
 
-  let en = word?.en || '';
-  let ja = word?.ja || '';
-  let example = word?.example || '';
-  let notes = word?.notes || '';
-  let category_id = word?.category_id || undefined;
+  // State
+  let en = $state(word?.en || '');
+  let ja = $state(word?.ja || '');
+  let example = $state(word?.example || '');
+  let notes = $state(word?.notes || '');
+  let category_id = $state<number | undefined>(word?.category_id || undefined);
+  let errors = $state<Record<string, string>>({});
 
-  let errors: Record<string, string> = {};
-
+  // Functions
   function validate(): boolean {
     errors = {};
 
@@ -56,7 +60,7 @@
   }
 </script>
 
-<form class="word-form" on:submit={handleSubmit}>
+<form class="word-form" onsubmit={handleSubmit}>
   <div class="form-group">
     <label for="en" class="form-label">英単語 *</label>
     <input
@@ -123,8 +127,8 @@
     <button type="submit" class="btn btn--primary">
       {word ? '更新' : '登録'}
     </button>
-    {#if onCancel}
-      <button type="button" class="btn btn--secondary" on:click={onCancel}>
+    {#if handleCancel}
+      <button type="button" class="btn btn--secondary" onclick={handleCancel}>
         キャンセル
       </button>
     {/if}

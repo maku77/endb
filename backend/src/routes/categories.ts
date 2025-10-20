@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { Env, CreateCategoryRequest, UpdateCategoryRequest } from '../types';
 import * as db from '../db';
+import { authMiddleware } from '../middleware/auth';
 
 const categories = new Hono<{ Bindings: Env }>();
 
@@ -22,8 +23,8 @@ categories.get('/:id', async (c) => {
   return c.json(category);
 });
 
-// カテゴリ作成
-categories.post('/', async (c) => {
+// カテゴリ作成（認証が必要）
+categories.post('/', authMiddleware, async (c) => {
   const body = await c.req.json<CreateCategoryRequest>();
 
   // バリデーション
@@ -41,8 +42,8 @@ categories.post('/', async (c) => {
   }
 });
 
-// カテゴリ更新
-categories.put('/:id', async (c) => {
+// カテゴリ更新（認証が必要）
+categories.put('/:id', authMiddleware, async (c) => {
   const id = parseInt(c.req.param('id'));
   const body = await c.req.json<UpdateCategoryRequest>();
 
@@ -64,8 +65,8 @@ categories.put('/:id', async (c) => {
   }
 });
 
-// カテゴリ削除
-categories.delete('/:id', async (c) => {
+// カテゴリ削除（認証が必要）
+categories.delete('/:id', authMiddleware, async (c) => {
   const id = parseInt(c.req.param('id'));
 
   const category = await db.getCategoryById(c.env.DB, id);

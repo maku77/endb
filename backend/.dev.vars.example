@@ -1,0 +1,10 @@
+# Development environment variables for Cloudflare Workers
+# Copy this file to .dev.vars and fill in your values
+# .dev.vars is gitignored and should NOT be committed
+
+# Admin credentials
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password-here
+
+# JWT secret (use a long random string)
+JWT_SECRET=your-jwt-secret-key-here
