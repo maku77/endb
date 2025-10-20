@@ -171,8 +171,7 @@
 </div>
 
 <style lang="scss">
-  @import '../styles/variables.scss';
-  @import '../styles/mixins.scss';
+  @use '../styles' as *;
 
   .page {
     max-width: 100%;

@@ -82,8 +82,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../styles/variables.scss';
-  @import '../../styles/mixins.scss';
+  @use '../../styles' as *;
 
   .word-card {
     @include card;

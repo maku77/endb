@@ -2,6 +2,10 @@
   import '../styles/global.scss';
   import { authStore } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
+  import type { Snippet } from 'svelte';
+
+  // Props
+  let { children }: { children: Snippet } = $props();
 
   // Derived: ログイン状態を取得
   let isLoggedIn = $derived($authStore !== null);
@@ -32,13 +36,12 @@
   </nav>
 
   <main class="main">
-    <slot />
+    {@render children()}
   </main>
 </div>
 
 <style lang="scss">
-  @import '../styles/variables.scss';
-  @import '../styles/mixins.scss';
+  @use '../styles' as *;
 
   .app {
     min-height: 100vh;

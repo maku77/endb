@@ -1,0 +1,8 @@
+// Sass モジュールシステムを使用した中央エクスポートファイル
+// このファイルから variables と mixins を一元的に提供する
+
+// variables.scss のすべての変数を名前空間なしで再エクスポート
+@forward './variables.scss';
+
+// mixins.scss のすべてのミックスインを名前空間なしで再エクスポート
+@forward './mixins.scss';

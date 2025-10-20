@@ -109,7 +109,7 @@
       bind:value={example}
       placeholder="例: I ate an apple for breakfast."
       rows="3"
-    />
+    ></textarea>
   </div>
 
   <div class="form-group">
@@ -120,7 +120,7 @@
       bind:value={notes}
       placeholder="覚え方やヒントなど"
       rows="3"
-    />
+    ></textarea>
   </div>
 
   <div class="form-actions">
@@ -136,8 +136,7 @@
 </form>
 
 <style lang="scss">
-  @import '../../styles/variables.scss';
-  @import '../../styles/mixins.scss';
+  @use '../../styles' as *;
 
   .word-form {
     display: flex;

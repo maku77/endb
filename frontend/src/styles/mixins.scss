@@ -1,4 +1,5 @@
-@import './variables.scss';
+@use "sass:color";
+@use './variables.scss' as *;
 
 // ボタン用ミックスイン
 @mixin button-base {
@@ -54,7 +55,7 @@
   color: white;
 
   &:hover:not(:disabled) {
-    background-color: darken($color-danger, 10%);
+    background-color: color.scale($color-danger, $lightness: -10%);
   }
 }
 
