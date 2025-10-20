@@ -11,8 +11,10 @@ import type {
   LoginResponse,
 } from './types';
 import { authStore } from './stores/auth';
+import { env } from '$env/dynamic/public';
 
-const API_BASE_URL = 'http://localhost:8787'; // Cloudflare Workers デフォルトポート
+// 環境変数から API URL を取得、未設定の場合はローカル開発用
+const API_BASE_URL = env.PUBLIC_API_URL || 'http://localhost:8787';
 
 // ヘルパー関数
 async function handleResponse<T>(response: Response): Promise<T> {

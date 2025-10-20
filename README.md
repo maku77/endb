@@ -166,7 +166,24 @@ endb/
    pnpm install
    ```
 
-2. **開発サーバーの起動**
+2. **環境変数の設定（オプション）**
+
+   デフォルトでは `http://localhost:8787` の API を参照します。別の URL を使用する場合:
+
+   ```bash
+   # サンプルファイルをコピー
+   cp .env.example .env.local
+
+   # .env.local を編集してAPI URLを設定
+   ```
+
+   `.env.local` の内容例：
+   ```bash
+   # API Base URL (デフォルト: http://localhost:8787)
+   PUBLIC_API_URL=http://localhost:8787
+   ```
+
+3. **開発サーバーの起動**
    ```bash
    pnpm dev
    ```
@@ -263,7 +280,7 @@ endb/
 
 2. **デプロイ実行**
    ```bash
-   pnpm deploy
+   pnpm run deploy
    ```
 
 ### フロントエンド（Pages）のデプロイ
@@ -283,8 +300,21 @@ endb/
      - Build output directory: `build`
      - Root directory: `frontend`
 
-3. **環境変数の設定**
+3. **環境変数の設定（重要）**
+
+   Cloudflare Pages のダッシュボードで以下の環境変数を設定:
+
    - `NODE_VERSION`: `18` または `20`
+   - `PUBLIC_API_URL`: バックエンドのWorkers URL（例: `https://endb-backend.maku77.workers.dev`）
+
+   **設定手順:**
+   1. Cloudflare ダッシュボード > Pages > プロジェクト選択
+   2. Settings > Environment variables
+   3. Production タブで「Add variable」をクリック
+   4. Variable name: `PUBLIC_API_URL`
+   5. Value: `https://your-backend-url.workers.dev`（実際のWorkers URLに置き換え）
+   6. 「Save」をクリック
+   7. デプロイを再実行（Deployments > 最新デプロイの「Retry deployment」）
 
 ## 今後の実装予定
 
