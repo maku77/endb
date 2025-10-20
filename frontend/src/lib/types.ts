@@ -29,6 +29,7 @@ export type CreateWordInput = {
   example?: string;
   notes?: string;
   category_id?: number;
+  created_at?: string;
 };
 
 export type UpdateWordInput = Partial<CreateWordInput>;

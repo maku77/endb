@@ -24,6 +24,8 @@
       ? Math.round((word.correct_count / word.review_count) * 100)
       : 0
   );
+
+  let registeredDate = $derived(word.created_at.split('T')[0]);
 </script>
 
 <div class="word-card">
@@ -66,6 +68,10 @@
     <div class="stat">
       <span class="stat__label">正答率</span>
       <span class="stat__value">{accuracy}%</span>
+    </div>
+    <div class="stat stat--registered">
+      <span class="stat__label">登録</span>
+      <span class="stat__value">{registeredDate}</span>
     </div>
   </div>
 
@@ -183,6 +189,19 @@
       font-size: $font-size-base;
       color: $color-text-primary;
       font-weight: $font-weight-semibold;
+    }
+
+    &--registered {
+      .stat__label {
+        font-size: $font-size-xs;
+        color: $color-text-muted;
+      }
+
+      .stat__value {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        font-weight: $font-weight-medium;
+      }
     }
   }
 

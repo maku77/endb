@@ -49,14 +49,29 @@ export async function createWord(
     example?: string;
     notes?: string;
     category_id?: number;
+    created_at?: string;
   }
 ): Promise<number> {
-  const result = await db
-    .prepare(
-      'INSERT INTO words (en, ja, example, notes, category_id) VALUES (?, ?, ?, ?, ?) RETURNING id'
-    )
-    .bind(data.en, data.ja, data.example || null, data.notes || null, data.category_id || null)
-    .first<{ id: number }>();
+  const result = data.created_at
+    ? await db
+        .prepare(
+          'INSERT INTO words (en, ja, example, notes, category_id, created_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id'
+        )
+        .bind(
+          data.en,
+          data.ja,
+          data.example || null,
+          data.notes || null,
+          data.category_id || null,
+          data.created_at
+        )
+        .first<{ id: number }>()
+    : await db
+        .prepare(
+          'INSERT INTO words (en, ja, example, notes, category_id) VALUES (?, ?, ?, ?, ?) RETURNING id'
+        )
+        .bind(data.en, data.ja, data.example || null, data.notes || null, data.category_id || null)
+        .first<{ id: number }>();
 
   return result?.id || 0;
 }
@@ -70,6 +85,7 @@ export async function updateWord(
     example: string;
     notes: string;
     category_id: number;
+    created_at: string;
   }>
 ): Promise<boolean> {
   const fields: string[] = [];
@@ -94,6 +110,10 @@ export async function updateWord(
   if (data.category_id !== undefined) {
     fields.push('category_id = ?');
     values.push(data.category_id);
+  }
+  if (data.created_at !== undefined) {
+    fields.push('created_at = ?');
+    values.push(data.created_at);
   }
 
   if (fields.length === 0) {

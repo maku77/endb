@@ -15,6 +15,9 @@
   let example = $state(word?.example || '');
   let notes = $state(word?.notes || '');
   let category_id = $state<number | undefined>(word?.category_id || undefined);
+  let created_at = $state(
+    word?.created_at ? word.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+  );
   let errors = $state<Record<string, string>>({});
 
   // Functions
@@ -27,6 +30,10 @@
 
     if (!ja.trim()) {
       errors.ja = '日本語訳は必須です';
+    }
+
+    if (!created_at || !/^\d{4}-\d{2}-\d{2}$/.test(created_at)) {
+      errors.created_at = '日付はYYYY-MM-DD形式で入力してください';
     }
 
     return Object.keys(errors).length === 0;
@@ -42,6 +49,7 @@
     const data: CreateWordInput = {
       en: en.trim(),
       ja: ja.trim(),
+      created_at: created_at,
     };
 
     if (example.trim()) {
@@ -88,6 +96,20 @@
     />
     {#if errors.ja}
       <span class="form-error">{errors.ja}</span>
+    {/if}
+  </div>
+
+  <div class="form-group">
+    <label for="created_at" class="form-label">登録日 *</label>
+    <input
+      id="created_at"
+      type="date"
+      class="form-input"
+      class:form-input--error={errors.created_at}
+      bind:value={created_at}
+    />
+    {#if errors.created_at}
+      <span class="form-error">{errors.created_at}</span>
     {/if}
   </div>
 
