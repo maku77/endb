@@ -3,6 +3,7 @@
   import * as api from '$lib/api';
   import WordCard from '$lib/components/WordCard.svelte';
   import WordForm from '$lib/components/WordForm.svelte';
+  import { authStore } from '$lib/stores/auth';
 
   // State
   let words = $state<Word[]>([]);
@@ -14,6 +15,9 @@
   let selectedMastery = $state<number | undefined>(undefined);
   let showForm = $state(false);
   let editingWord = $state<Word | null>(null);
+
+  // Derived - authentication status
+  let isAuthenticated = $derived($authStore !== null);
 
   // Effects
   $effect(() => {
@@ -94,9 +98,11 @@
 <div class="page">
   <header class="page-header">
     <h1 class="page-title">単語一覧</h1>
-    <button class="btn btn--primary" onclick={handleNewWord}>
-      + 新しい単語を追加
-    </button>
+    {#if isAuthenticated}
+      <button class="btn btn--primary" onclick={handleNewWord}>
+        + 新しい単語を追加
+      </button>
+    {/if}
   </header>
 
   {#if error}
@@ -152,9 +158,11 @@
   {:else if words.length === 0}
     <div class="empty">
       <p>単語が登録されていません。</p>
-      <button class="btn btn--primary" onclick={handleNewWord}>
-        最初の単語を登録する
-      </button>
+      {#if isAuthenticated}
+        <button class="btn btn--primary" onclick={handleNewWord}>
+          最初の単語を登録する
+        </button>
+      {/if}
     </div>
   {:else}
     <div class="words-grid">
@@ -162,8 +170,8 @@
         <WordCard
           {word}
           category={getCategoryById(word.category_id)}
-          handleEdit={() => handleEdit(word)}
-          handleDelete={() => handleDelete(word)}
+          handleEdit={isAuthenticated ? () => handleEdit(word) : undefined}
+          handleDelete={isAuthenticated ? () => handleDelete(word) : undefined}
         />
       {/each}
     </div>

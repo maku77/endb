@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Category } from '$lib/types';
   import * as api from '$lib/api';
+  import { authStore } from '$lib/stores/auth';
 
   // State
   let categories = $state<Category[]>([]);
@@ -12,6 +13,9 @@
   let color = $state('#3b82f6');
   let description = $state('');
   let formErrors = $state<Record<string, string>>({});
+
+  // Derived - authentication status
+  let isAuthenticated = $derived($authStore !== null);
 
   // Effects
   $effect(() => {
@@ -112,9 +116,11 @@
 <div class="page">
   <header class="page-header">
     <h1 class="page-title">カテゴリ管理</h1>
-    <button class="btn btn--primary" onclick={handleNew}>
-      + 新しいカテゴリを追加
-    </button>
+    {#if isAuthenticated}
+      <button class="btn btn--primary" onclick={handleNew}>
+        + 新しいカテゴリを追加
+      </button>
+    {/if}
   </header>
 
   {#if error}
@@ -181,9 +187,11 @@
   {:else if categories.length === 0}
     <div class="empty">
       <p>カテゴリが登録されていません。</p>
-      <button class="btn btn--primary" onclick={handleNew}>
-        最初のカテゴリを作成する
-      </button>
+      {#if isAuthenticated}
+        <button class="btn btn--primary" onclick={handleNew}>
+          最初のカテゴリを作成する
+        </button>
+      {/if}
     </div>
   {:else}
     <div class="categories-list">
@@ -202,14 +210,16 @@
                 {/if}
               </div>
             </div>
-            <div class="category-card__actions">
-              <button class="btn btn--secondary" onclick={() => handleEdit(category)}>
-                編集
-              </button>
-              <button class="btn btn--danger" onclick={() => handleDelete(category)}>
-                削除
-              </button>
-            </div>
+            {#if isAuthenticated}
+              <div class="category-card__actions">
+                <button class="btn btn--secondary" onclick={() => handleEdit(category)}>
+                  編集
+                </button>
+                <button class="btn btn--danger" onclick={() => handleDelete(category)}>
+                  削除
+                </button>
+              </div>
+            {/if}
           </div>
         </div>
       {/each}
