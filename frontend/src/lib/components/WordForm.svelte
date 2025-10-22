@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Word, Category, CreateWordInput } from '../types';
+  import { generateExamples } from '../api';
 
   // Props
   let { categories = [], word = null, handleSubmit: onSubmit, handleCancel } = $props<{
@@ -19,6 +20,12 @@
     word?.created_at ? word.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
   );
   let errors = $state<Record<string, string>>({});
+
+  // 例文生成用の状態
+  let generatedExamples = $state<string[]>([]);
+  let isGenerating = $state(false);
+  let generateError = $state<string | null>(null);
+  let debugLogs = $state<string[]>([]);
 
   // Functions
   function validate(): boolean {
@@ -66,19 +73,58 @@
 
     onSubmit(data);
   }
+
+  async function handleGenerateExamples() {
+    if (!en.trim()) {
+      generateError = '英単語を入力してください';
+      return;
+    }
+
+    isGenerating = true;
+    generateError = null;
+    generatedExamples = [];
+    debugLogs = [];
+
+    try {
+      const result = await generateExamples(en.trim(), ja.trim() || undefined);
+      generatedExamples = result.examples;
+      debugLogs = result.logs || [];
+      console.log('API Response:', result);
+      console.log('Debug logs:', debugLogs);
+    } catch (error) {
+      console.error('Error generating examples:', error);
+      if (error instanceof Error) {
+        generateError = `例文生成に失敗しました: ${error.message}`;
+      } else {
+        generateError = '例文生成に失敗しました';
+      }
+    } finally {
+      isGenerating = false;
+    }
+  }
 </script>
 
 <form class="word-form" onsubmit={handleSubmit}>
   <div class="form-group">
     <label for="en" class="form-label">英単語 *</label>
-    <input
-      id="en"
-      type="text"
-      class="form-input"
-      class:form-input--error={errors.en}
-      bind:value={en}
-      placeholder="例: apple"
-    />
+    <div class="input-with-button">
+      <input
+        id="en"
+        type="text"
+        class="form-input"
+        class:form-input--error={errors.en}
+        bind:value={en}
+        placeholder="例: apple"
+      />
+      <button
+        type="button"
+        class="btn btn--generate"
+        onclick={handleGenerateExamples}
+        disabled={isGenerating}
+      >
+        {isGenerating ? '生成中...' : '例文生成'}
+      </button>
+    </div>
     {#if errors.en}
       <span class="form-error">{errors.en}</span>
     {/if}
@@ -144,6 +190,30 @@
       rows="3"
     ></textarea>
   </div>
+
+  {#if generatedExamples.length > 0}
+    <div class="generated-examples">
+      <h3 class="generated-examples__title">生成された例文</h3>
+      <ul class="generated-examples__list">
+        {#each generatedExamples as example}
+          <li class="generated-examples__item">{example}</li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+
+  {#if generateError}
+    <div class="generate-error">
+      {generateError}
+    </div>
+  {/if}
+
+  {#if debugLogs.length > 0}
+    <div class="debug-logs">
+      <h4 class="debug-logs__title">デバッグログ</h4>
+      <pre class="debug-logs__content">{debugLogs.join('\n')}</pre>
+    </div>
+  {/if}
 
   <div class="form-actions">
     <button type="submit" class="btn btn--primary">
@@ -216,6 +286,100 @@
 
     &--secondary {
       @include button-secondary;
+    }
+
+    &--generate {
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $color-background;
+      background-color: $color-primary;
+      border: none;
+      border-radius: $border-radius-sm;
+      cursor: pointer;
+      transition: all $transition-normal;
+      white-space: nowrap;
+
+      &:hover:not(:disabled) {
+        background-color: $color-primary-dark;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .input-with-button {
+    display: flex;
+    gap: $spacing-sm;
+    align-items: center;
+
+    .form-input {
+      flex: 1;
+    }
+  }
+
+  .generated-examples {
+    background-color: rgba($color-primary, 0.05);
+    border: 1px solid rgba($color-primary, 0.2);
+    border-radius: $border-radius-md;
+    padding: $spacing-md;
+
+    &__title {
+      margin: 0 0 $spacing-sm 0;
+      font-size: $font-size-base;
+      font-weight: $font-weight-medium;
+      color: $color-text-primary;
+    }
+
+    &__list {
+      margin: 0;
+      padding-left: $spacing-lg;
+    }
+
+    &__item {
+      margin-bottom: $spacing-xs;
+      color: $color-text-secondary;
+      line-height: 1.6;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .generate-error {
+    padding: $spacing-sm $spacing-md;
+    background-color: rgba($color-danger, 0.1);
+    border: 1px solid $color-danger;
+    border-radius: $border-radius-sm;
+    color: $color-danger;
+    font-size: $font-size-sm;
+  }
+
+  .debug-logs {
+    background-color: $color-background-tertiary;
+    border: 1px solid $color-border;
+    border-radius: $border-radius-sm;
+    padding: $spacing-sm;
+    margin-top: $spacing-md;
+
+    &__title {
+      margin: 0 0 $spacing-xs 0;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $color-text-secondary;
+    }
+
+    &__content {
+      margin: 0;
+      font-family: $font-family-mono;
+      font-size: $font-size-xs;
+      color: $color-text-secondary;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   }
 </style>

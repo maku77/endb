@@ -63,4 +63,6 @@ export type Env = {
   ADMIN_USERNAME: string;
   ADMIN_PASSWORD: string;
   JWT_SECRET: string;
+  AWS_BEARER_TOKEN_BEDROCK: string;
+  INFERENCE_PROFILE: string;
 };

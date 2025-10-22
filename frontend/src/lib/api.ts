@@ -100,6 +100,19 @@ export async function deleteWord(id: number): Promise<void> {
   await handleResponse<{ message: string }>(response);
 }
 
+export async function generateExamples(
+  en: string,
+  ja?: string
+): Promise<{ examples: string[]; logs?: string[] }> {
+  const response = await fetch(`${API_BASE_URL}/api/words/generate-examples`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ en, ja }),
+  });
+  const data = await handleResponse<{ examples: string[]; logs?: string[] }>(response);
+  return data;
+}
+
 // カテゴリ関連のAPI
 
 export async function getCategories(): Promise<Category[]> {
