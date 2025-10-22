@@ -106,7 +106,7 @@ export async function generateExamples(
 ): Promise<{ examples: string[]; logs?: string[] }> {
   const response = await fetch(`${API_BASE_URL}/api/words/generate-examples`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ en, ja }),
   });
   const data = await handleResponse<{ examples: string[]; logs?: string[] }>(response);
