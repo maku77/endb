@@ -84,8 +84,8 @@ words.delete('/:id', authMiddleware, async (c) => {
   return c.json({ message: 'Word deleted successfully' });
 });
 
-// 例文生成（AWS Bedrock / Claude API使用）
-words.post('/generate-examples', async (c) => {
+// 例文生成（AWS Bedrock / Claude API使用）（認証が必要）
+words.post('/generate-examples', authMiddleware, async (c) => {
   const body = await c.req.json<{ en: string; ja?: string }>();
   const logs: string[] = []; // デバッグ用ログ配列
 
