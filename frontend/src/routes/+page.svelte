@@ -121,61 +121,63 @@
     </div>
   {/if}
 
-  <div class="filters">
-    <div class="filter-group">
-      <input
-        type="text"
-        class="filter-input"
-        bind:value={searchQuery}
-        placeholder="単語を検索..."
-        onkeyup={(e) => e.key === 'Enter' && handleSearch()}
-      />
-      <button class="btn btn--secondary" onclick={handleSearch}>検索</button>
-    </div>
-
-    <div class="filter-group">
-      <select class="filter-select" bind:value={selectedCategory} onchange={handleSearch}>
-        <option value={undefined}>全カテゴリ</option>
-        {#each categories as category}
-          <option value={category.id}>{category.name}</option>
-        {/each}
-      </select>
-
-      <select class="filter-select" bind:value={selectedMastery} onchange={handleSearch}>
-        <option value={undefined}>全レベル</option>
-        <option value={0}>未学習</option>
-        <option value={1}>初級</option>
-        <option value={2}>中級</option>
-        <option value={3}>中上級</option>
-        <option value={4}>上級</option>
-        <option value={5}>習得済み</option>
-      </select>
-    </div>
-  </div>
-
-  {#if loading}
-    <div class="loading">読み込み中...</div>
-  {:else if words.length === 0}
-    <div class="empty">
-      <p>単語が登録されていません。</p>
-      {#if isAuthenticated}
-        <button class="btn btn--primary" onclick={handleNewWord}>
-          最初の単語を登録する
-        </button>
-      {/if}
-    </div>
-  {:else}
-    <div class="words-grid">
-      {#each words as word (word.id)}
-        <WordCard
-          {word}
-          category={getCategoryById(word.category_id)}
-          handleEdit={isAuthenticated ? () => handleEdit(word) : undefined}
-          handleDelete={isAuthenticated ? () => handleDelete(word) : undefined}
+  <div class="content-section" class:content-section--hidden={showForm}>
+    <div class="filters">
+      <div class="filter-group">
+        <input
+          type="text"
+          class="filter-input"
+          bind:value={searchQuery}
+          placeholder="単語を検索..."
+          onkeyup={(e) => e.key === 'Enter' && handleSearch()}
         />
-      {/each}
+        <button class="btn btn--secondary" onclick={handleSearch}>検索</button>
+      </div>
+
+      <div class="filter-group">
+        <select class="filter-select" bind:value={selectedCategory} onchange={handleSearch}>
+          <option value={undefined}>全カテゴリ</option>
+          {#each categories as category}
+            <option value={category.id}>{category.name}</option>
+          {/each}
+        </select>
+
+        <select class="filter-select" bind:value={selectedMastery} onchange={handleSearch}>
+          <option value={undefined}>全レベル</option>
+          <option value={0}>未学習</option>
+          <option value={1}>初級</option>
+          <option value={2}>中級</option>
+          <option value={3}>中上級</option>
+          <option value={4}>上級</option>
+          <option value={5}>習得済み</option>
+        </select>
+      </div>
     </div>
-  {/if}
+
+    {#if loading}
+      <div class="loading">読み込み中...</div>
+    {:else if words.length === 0}
+      <div class="empty">
+        <p>単語が登録されていません。</p>
+        {#if isAuthenticated}
+          <button class="btn btn--primary" onclick={handleNewWord}>
+            最初の単語を登録する
+          </button>
+        {/if}
+      </div>
+    {:else}
+      <div class="words-grid">
+        {#each words as word (word.id)}
+          <WordCard
+            {word}
+            category={getCategoryById(word.category_id)}
+            handleEdit={isAuthenticated ? () => handleEdit(word) : undefined}
+            handleDelete={isAuthenticated ? () => handleDelete(word) : undefined}
+          />
+        {/each}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
@@ -208,6 +210,12 @@
     font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
     margin-bottom: $spacing-lg;
+  }
+
+  .content-section {
+    &--hidden {
+      display: none;
+    }
   }
 
   .filters {

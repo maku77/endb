@@ -182,49 +182,51 @@
     </div>
   {/if}
 
-  {#if loading}
-    <div class="loading">読み込み中...</div>
-  {:else if categories.length === 0}
-    <div class="empty">
-      <p>カテゴリが登録されていません。</p>
-      {#if isAuthenticated}
-        <button class="btn btn--primary" onclick={handleNew}>
-          最初のカテゴリを作成する
-        </button>
-      {/if}
-    </div>
-  {:else}
-    <div class="categories-list">
-      {#each categories as category (category.id)}
-        <div class="category-card">
-          <div class="category-card__header">
-            <div class="category-card__info">
-              <div
-                class="category-card__color"
-                style="background-color: {category.color || '#3b82f6'}"
-              />
-              <div>
-                <h3 class="category-card__name">{category.name}</h3>
-                {#if category.description}
-                  <p class="category-card__description">{category.description}</p>
-                {/if}
+  <div class="content-section" class:content-section--hidden={showForm}>
+    {#if loading}
+      <div class="loading">読み込み中...</div>
+    {:else if categories.length === 0}
+      <div class="empty">
+        <p>カテゴリが登録されていません。</p>
+        {#if isAuthenticated}
+          <button class="btn btn--primary" onclick={handleNew}>
+            最初のカテゴリを作成する
+          </button>
+        {/if}
+      </div>
+    {:else}
+      <div class="categories-list">
+        {#each categories as category (category.id)}
+          <div class="category-card">
+            <div class="category-card__header">
+              <div class="category-card__info">
+                <div
+                  class="category-card__color"
+                  style="background-color: {category.color || '#3b82f6'}"
+                />
+                <div>
+                  <h3 class="category-card__name">{category.name}</h3>
+                  {#if category.description}
+                    <p class="category-card__description">{category.description}</p>
+                  {/if}
+                </div>
               </div>
+              {#if isAuthenticated}
+                <div class="category-card__actions">
+                  <button class="btn btn--secondary" onclick={() => handleEdit(category)}>
+                    編集
+                  </button>
+                  <button class="btn btn--danger" onclick={() => handleDelete(category)}>
+                    削除
+                  </button>
+                </div>
+              {/if}
             </div>
-            {#if isAuthenticated}
-              <div class="category-card__actions">
-                <button class="btn btn--secondary" onclick={() => handleEdit(category)}>
-                  編集
-                </button>
-                <button class="btn btn--danger" onclick={() => handleDelete(category)}>
-                  削除
-                </button>
-              </div>
-            {/if}
           </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
+        {/each}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
@@ -258,6 +260,12 @@
     font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
     margin-bottom: $spacing-lg;
+  }
+
+  .content-section {
+    &--hidden {
+      display: none;
+    }
   }
 
   .category-form {
