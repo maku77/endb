@@ -37,12 +37,22 @@ words.get('/:id', async (c) => {
 words.post('/', authMiddleware, async (c) => {
   const body = await c.req.json<CreateWordRequest>();
 
+  // 入力値のトリミング
+  const trimmedBody: CreateWordRequest = {
+    en: body.en?.trim() || '',
+    ja: body.ja?.trim() || '',
+    example: body.example?.trim(),
+    notes: body.notes?.trim(),
+    category_id: body.category_id,
+    created_at: body.created_at,
+  };
+
   // バリデーション
-  if (!body.en || !body.ja) {
+  if (!trimmedBody.en || !trimmedBody.ja) {
     return c.json({ error: 'en and ja fields are required' }, 400);
   }
 
-  const id = await db.createWord(c.env.DB, body);
+  const id = await db.createWord(c.env.DB, trimmedBody);
   const word = await db.getWordById(c.env.DB, id);
 
   return c.json(word, 201);
@@ -58,7 +68,16 @@ words.put('/:id', authMiddleware, async (c) => {
     return c.json({ error: 'Word not found' }, 404);
   }
 
-  const success = await db.updateWord(c.env.DB, id, body);
+  // 入力値のトリミング
+  const trimmedBody: UpdateWordRequest = {};
+  if (body.en !== undefined) trimmedBody.en = body.en.trim();
+  if (body.ja !== undefined) trimmedBody.ja = body.ja.trim();
+  if (body.example !== undefined) trimmedBody.example = body.example.trim();
+  if (body.notes !== undefined) trimmedBody.notes = body.notes.trim();
+  if (body.category_id !== undefined) trimmedBody.category_id = body.category_id;
+  if (body.created_at !== undefined) trimmedBody.created_at = body.created_at;
+
+  const success = await db.updateWord(c.env.DB, id, trimmedBody);
   if (!success) {
     return c.json({ error: 'Failed to update word' }, 500);
   }
