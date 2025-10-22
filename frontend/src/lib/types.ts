@@ -62,3 +62,10 @@ export type LoginResponse = {
   token: string;
   expiresIn: number;
 };
+
+// 例文生成関連の型定義
+
+export type GeneratedExample = {
+  en: string;
+  ja: string;
+};

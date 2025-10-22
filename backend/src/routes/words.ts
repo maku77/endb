@@ -128,8 +128,8 @@ words.post('/generate-examples', authMiddleware, async (c) => {
 
   try {
     const prompt = body.ja
-      ? `英単語 "${body.en}" (意味: ${body.ja}) を使った英語の例文を3つ生成してください。\n各例文は実用的で自然な表現にしてください。\n\n出力形式:\n1. [例文1]\n2. [例文2]\n3. [例文3]`
-      : `英単語 "${body.en}" を使った英語の例文を3つ生成してください。\n各例文は実用的で自然な表現にしてください。\n\n出力形式:\n1. [例文1]\n2. [例文2]\n3. [例文3]`;
+      ? `英単語 "${body.en}" (意味: ${body.ja}) を使った英語の例文を3つ生成してください。\n各例文は実用的で自然な表現にし、対応する日本語訳も提供してください。\n\n出力形式:\n1. [英語例文1]\n   [日本語訳1]\n2. [英語例文2]\n   [日本語訳2]\n3. [英語例文3]\n   [日本語訳3]`
+      : `英単語 "${body.en}" を使った英語の例文を3つ生成してください。\n各例文は実用的で自然な表現にし、対応する日本語訳も提供してください。\n\n出力形式:\n1. [英語例文1]\n   [日本語訳1]\n2. [英語例文2]\n   [日本語訳2]\n3. [英語例文3]\n   [日本語訳3]`;
 
     console.log('Calling Bedrock API with token:', token.substring(0, 20) + '...');
     logs.push('Calling Bedrock API...');
@@ -203,15 +203,30 @@ words.post('/generate-examples', authMiddleware, async (c) => {
       );
     }
 
-    // 生成されたテキストから例文を抽出
-    const exampleLines = generatedText
-      .split('\n')
-      .filter((line: string) => line.trim().match(/^\d+\./))
-      .map((line: string) => line.replace(/^\d+\.\s*/, '').trim());
+    // 生成されたテキストから例文を抽出（英文と日本語訳のペア）
+    const lines = generatedText.split('\n').map((line: string) => line.trim());
+    const examples: Array<{ en: string; ja: string }> = [];
 
-    logs.push(`Extracted ${exampleLines.length} examples`);
+    let currentEn = '';
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // 番号付きの行（英文）
+      if (line.match(/^\d+\./)) {
+        currentEn = line.replace(/^\d+\.\s*/, '').trim();
+      }
+      // 次の行が番号なしで、前に英文がある場合は日本語訳と判断
+      else if (currentEn && line && !line.match(/^\d+\./)) {
+        examples.push({
+          en: currentEn,
+          ja: line,
+        });
+        currentEn = '';
+      }
+    }
 
-    return c.json({ examples: exampleLines, logs });
+    logs.push(`Extracted ${examples.length} examples`);
+
+    return c.json({ examples, logs });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : '';

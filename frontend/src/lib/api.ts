@@ -9,6 +9,7 @@ import type {
   Stats,
   LoginRequest,
   LoginResponse,
+  GeneratedExample,
 } from './types';
 import { authStore } from './stores/auth';
 import { env } from '$env/dynamic/public';
@@ -103,13 +104,13 @@ export async function deleteWord(id: number): Promise<void> {
 export async function generateExamples(
   en: string,
   ja?: string
-): Promise<{ examples: string[]; logs?: string[] }> {
+): Promise<{ examples: GeneratedExample[]; logs?: string[] }> {
   const response = await fetch(`${API_BASE_URL}/api/words/generate-examples`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ en, ja }),
   });
-  const data = await handleResponse<{ examples: string[]; logs?: string[] }>(response);
+  const data = await handleResponse<{ examples: GeneratedExample[]; logs?: string[] }>(response);
   return data;
 }
 

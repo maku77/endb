@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Word, Category, CreateWordInput } from '../types';
+  import type { Word, Category, CreateWordInput, GeneratedExample } from '../types';
   import { generateExamples } from '../api';
 
   // Props
@@ -22,7 +22,7 @@
   let errors = $state<Record<string, string>>({});
 
   // 例文生成用の状態
-  let generatedExamples = $state<string[]>([]);
+  let generatedExamples = $state<GeneratedExample[]>([]);
   let isGenerating = $state(false);
   let generateError = $state<string | null>(null);
   let debugLogs = $state<string[]>([]);
@@ -196,7 +196,10 @@
       <h3 class="generated-examples__title">生成された例文</h3>
       <ul class="generated-examples__list">
         {#each generatedExamples as example}
-          <li class="generated-examples__item">{example}</li>
+          <li class="generated-examples__item">
+            <div class="example-en">{example.en}</div>
+            <div class="example-ja">{example.ja}</div>
+          </li>
         {/each}
       </ul>
     </div>
@@ -340,12 +343,22 @@
     }
 
     &__item {
-      margin-bottom: $spacing-xs;
-      color: $color-text-secondary;
+      margin-bottom: $spacing-md;
       line-height: 1.6;
 
       &:last-child {
         margin-bottom: 0;
+      }
+
+      .example-en {
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: $spacing-xs;
+      }
+
+      .example-ja {
+        color: $color-text-secondary;
+        font-size: $font-size-sm;
       }
     }
   }
