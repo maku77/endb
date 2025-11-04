@@ -8,3 +8,7 @@ ADMIN_PASSWORD=your-secure-password-here
 
 # JWT secret (use a long random string)
 JWT_SECRET=your-jwt-secret-key-here
+
+# AWS Bedrock configuration (for example sentence generation)
+AWS_BEARER_TOKEN_BEDROCK=your-aws-bearer-token-here
+INFERENCE_PROFILE=your-inference-profile-arn-here

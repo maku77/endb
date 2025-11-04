@@ -123,6 +123,10 @@ endb/
 
    # JWT署名用の秘密鍵（ランダムな長い文字列を設定）
    JWT_SECRET=your-random-secret-key-at-least-32-characters-long
+
+   # AWS Bedrock設定（例文生成機能で使用）
+   AWS_BEARER_TOKEN_BEDROCK=your-aws-bearer-token-here
+   INFERENCE_PROFILE=your-inference-profile-arn-here
    ```
 
    **JWT_SECRETの生成例:**
@@ -147,6 +151,12 @@ endb/
 
    wrangler secret put JWT_SECRET
    # プロンプトに従ってJWT秘密鍵を入力
+
+   wrangler secret put AWS_BEARER_TOKEN_BEDROCK
+   # AWS Bedrockのベアラートークンを入力（例文生成機能で使用）
+
+   wrangler secret put INFERENCE_PROFILE
+   # 推論プロファイルのARNを入力（例文生成機能で使用）
    ```
 
    設定したシークレットは Cloudflare ダッシュボードの Workers & Pages > あなたのWorker > Settings > Variables で確認できます。
@@ -220,6 +230,7 @@ endb/
 - `POST /api/words` - 単語登録 🔒
 - `PUT /api/words/:id` - 単語更新 🔒
 - `DELETE /api/words/:id` - 単語削除 🔒
+- `POST /api/words/generate-examples` - 例文生成（AWS Bedrock使用） 🔒
 
 ### カテゴリ管理
 - `GET /api/categories` - カテゴリ一覧取得
@@ -276,6 +287,10 @@ endb/
    wrangler secret put ADMIN_USERNAME
    wrangler secret put ADMIN_PASSWORD
    wrangler secret put JWT_SECRET
+
+   # AWS Bedrock設定（例文生成機能で使用）
+   wrangler secret put AWS_BEARER_TOKEN_BEDROCK
+   wrangler secret put INFERENCE_PROFILE
    ```
 
 2. **デプロイ実行**
