@@ -1,29 +1,35 @@
-import { Context, Next } from 'hono';
-import { sign, verify } from 'hono/jwt';
-import type { Env } from '../types';
+import { Context, Next } from "hono";
+import { sign, verify } from "hono/jwt";
+import type { Env } from "../types";
 
 // JWTトークンを生成
-export async function generateToken(username: string, secret: string): Promise<string> {
+export async function generateToken(
+  username: string,
+  secret: string
+): Promise<string> {
   const payload = {
     username,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間有効
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30日間有効
   };
   return await sign(payload, secret);
 }
 
 // JWTトークンを検証するミドルウェア
-export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) {
-  const authHeader = c.req.header('Authorization');
+export async function authMiddleware(
+  c: Context<{ Bindings: Env }>,
+  next: Next
+) {
+  const authHeader = c.req.header("Authorization");
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return c.json({ error: 'Unauthorized: No token provided' }, 401);
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return c.json({ error: "Unauthorized: No token provided" }, 401);
   }
 
   const token = authHeader.substring(7); // "Bearer " を削除
   const secret = c.env.JWT_SECRET;
 
   if (!secret) {
-    return c.json({ error: 'Server configuration error' }, 500);
+    return c.json({ error: "Server configuration error" }, 500);
   }
 
   try {
@@ -31,14 +37,14 @@ export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) 
 
     // トークンの有効期限チェック
     if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return c.json({ error: 'Token expired' }, 401);
+      return c.json({ error: "Token expired" }, 401);
     }
 
     // ユーザー情報をコンテキストに保存
-    c.set('username', payload.username as string);
+    c.set("username", payload.username as string);
     await next();
   } catch (error) {
-    return c.json({ error: 'Unauthorized: Invalid token' }, 401);
+    return c.json({ error: "Unauthorized: Invalid token" }, 401);
   }
 }
 
