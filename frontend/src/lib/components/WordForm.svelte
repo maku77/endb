@@ -104,139 +104,161 @@
   }
 </script>
 
-<form class="word-form" onsubmit={handleSubmit}>
-  <div class="form-group">
-    <label for="en" class="form-label">英単語 *</label>
-    <div class="input-with-button">
+<div class="word-form-container">
+  <form class="word-form" onsubmit={handleSubmit}>
+    <div class="form-group">
+      <label for="en" class="form-label">英単語 *</label>
+      <div class="input-with-button">
+        <input
+          id="en"
+          type="text"
+          class="form-input"
+          class:form-input--error={errors.en}
+          bind:value={en}
+          placeholder="例: apple"
+        />
+        <button
+          type="button"
+          class="btn btn--generate"
+          onclick={handleGenerateExamples}
+          disabled={isGenerating}
+        >
+          {isGenerating ? '生成中...' : '例文生成'}
+        </button>
+      </div>
+      {#if errors.en}
+        <span class="form-error">{errors.en}</span>
+      {/if}
+    </div>
+
+    <div class="form-group">
+      <label for="ja" class="form-label">日本語訳 *</label>
       <input
-        id="en"
+        id="ja"
         type="text"
         class="form-input"
-        class:form-input--error={errors.en}
-        bind:value={en}
-        placeholder="例: apple"
+        class:form-input--error={errors.ja}
+        bind:value={ja}
+        placeholder="例: りんご"
       />
-      <button
-        type="button"
-        class="btn btn--generate"
-        onclick={handleGenerateExamples}
-        disabled={isGenerating}
-      >
-        {isGenerating ? '生成中...' : '例文生成'}
-      </button>
+      {#if errors.ja}
+        <span class="form-error">{errors.ja}</span>
+      {/if}
     </div>
-    {#if errors.en}
-      <span class="form-error">{errors.en}</span>
-    {/if}
-  </div>
 
-  <div class="form-group">
-    <label for="ja" class="form-label">日本語訳 *</label>
-    <input
-      id="ja"
-      type="text"
-      class="form-input"
-      class:form-input--error={errors.ja}
-      bind:value={ja}
-      placeholder="例: りんご"
-    />
-    {#if errors.ja}
-      <span class="form-error">{errors.ja}</span>
-    {/if}
-  </div>
+    <div class="form-group">
+      <label for="created_at" class="form-label">登録日 *</label>
+      <input
+        id="created_at"
+        type="date"
+        class="form-input"
+        class:form-input--error={errors.created_at}
+        bind:value={created_at}
+      />
+      {#if errors.created_at}
+        <span class="form-error">{errors.created_at}</span>
+      {/if}
+    </div>
 
-  <div class="form-group">
-    <label for="created_at" class="form-label">登録日 *</label>
-    <input
-      id="created_at"
-      type="date"
-      class="form-input"
-      class:form-input--error={errors.created_at}
-      bind:value={created_at}
-    />
-    {#if errors.created_at}
-      <span class="form-error">{errors.created_at}</span>
-    {/if}
-  </div>
-
-  <div class="form-group">
-    <label for="category" class="form-label">カテゴリ</label>
-    <select id="category" class="form-select" bind:value={category_id}>
-      <option value={undefined}>-- 選択してください --</option>
-      {#each categories as category}
-        <option value={category.id}>{category.name}</option>
-      {/each}
-    </select>
-  </div>
-
-  <div class="form-group">
-    <label for="example" class="form-label">例文</label>
-    <textarea
-      id="example"
-      class="form-textarea"
-      bind:value={example}
-      placeholder="例: I ate an apple for breakfast."
-      rows="3"
-    ></textarea>
-  </div>
-
-  <div class="form-group">
-    <label for="notes" class="form-label">メモ</label>
-    <textarea
-      id="notes"
-      class="form-textarea"
-      bind:value={notes}
-      placeholder="覚え方やヒントなど"
-      rows="3"
-    ></textarea>
-  </div>
-
-  {#if generatedExamples.length > 0}
-    <div class="generated-examples">
-      <h3 class="generated-examples__title">生成された例文</h3>
-      <ul class="generated-examples__list">
-        {#each generatedExamples as example}
-          <li class="generated-examples__item">
-            <div class="example-en">{example.en}</div>
-            <div class="example-ja">{example.ja}</div>
-          </li>
+    <div class="form-group">
+      <label for="category" class="form-label">カテゴリ</label>
+      <select id="category" class="form-select" bind:value={category_id}>
+        <option value={undefined}>-- 選択してください --</option>
+        {#each categories as category}
+          <option value={category.id}>{category.name}</option>
         {/each}
-      </ul>
+      </select>
     </div>
-  {/if}
 
-  {#if generateError}
-    <div class="generate-error">
-      {generateError}
+    <div class="form-group">
+      <label for="example" class="form-label">例文</label>
+      <textarea
+        id="example"
+        class="form-textarea"
+        bind:value={example}
+        placeholder="例: I ate an apple for breakfast."
+        rows="3"
+      ></textarea>
     </div>
-  {/if}
 
-  {#if debugLogs.length > 0}
-    <div class="debug-logs">
-      <h4 class="debug-logs__title">デバッグログ</h4>
-      <pre class="debug-logs__content">{debugLogs.join('\n')}</pre>
+    <div class="form-group">
+      <label for="notes" class="form-label">メモ</label>
+      <textarea
+        id="notes"
+        class="form-textarea"
+        bind:value={notes}
+        placeholder="覚え方やヒントなど"
+        rows="3"
+      ></textarea>
     </div>
-  {/if}
 
-  <div class="form-actions">
-    <button type="submit" class="btn btn--primary">
-      {word ? '更新' : '登録'}
-    </button>
-    {#if handleCancel}
-      <button type="button" class="btn btn--secondary" onclick={handleCancel}>
-        キャンセル
-      </button>
+    {#if generateError}
+      <div class="generate-error">
+        {generateError}
+      </div>
     {/if}
-  </div>
-</form>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">
+        {word ? '更新' : '登録'}
+      </button>
+      {#if handleCancel}
+        <button type="button" class="btn btn--secondary" onclick={handleCancel}>
+          キャンセル
+        </button>
+      {/if}
+    </div>
+  </form>
+
+  {#if generatedExamples.length > 0 || debugLogs.length > 0}
+    <aside class="examples-sidebar">
+      {#if generatedExamples.length > 0}
+        <div class="sidebar-section">
+          <h3 class="examples-sidebar__title">生成された例文</h3>
+          <ul class="examples-sidebar__list">
+            {#each generatedExamples as example}
+              <li class="examples-sidebar__item">
+                <div class="example-en">{example.en}</div>
+                <div class="example-ja">{example.ja}</div>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+
+      {#if debugLogs.length > 0}
+        <div class="sidebar-section">
+          <h4 class="debug-logs__title">デバッグログ</h4>
+          <pre class="debug-logs__content">{debugLogs.join('\n')}</pre>
+        </div>
+      {/if}
+    </aside>
+  {/if}
+</div>
 
 <style lang="scss">
   @use '../../styles' as *;
+
+  .word-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    @include responsive-lg {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
 
   .word-form {
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
+    flex: 1;
+
+    @include responsive-lg {
+      max-width: 50%;
+    }
   }
 
   .form-group {
@@ -324,26 +346,42 @@
     }
   }
 
-  .generated-examples {
+  .examples-sidebar {
     background-color: rgba($color-primary, 0.05);
     border: 1px solid rgba($color-primary, 0.2);
     border-radius: $border-radius-md;
     padding: $spacing-md;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    @include responsive-lg {
+      position: sticky;
+      top: $spacing-lg;
+      max-width: 50%;
+      max-height: calc(100vh - 2 * $spacing-lg);
+      overflow-y: auto;
+    }
 
     &__title {
-      margin: 0 0 $spacing-sm 0;
-      font-size: $font-size-base;
-      font-weight: $font-weight-medium;
+      margin: 0 0 $spacing-md 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
       color: $color-text-primary;
     }
 
     &__list {
       margin: 0;
-      padding-left: $spacing-lg;
+      padding: 0;
+      list-style: none;
     }
 
     &__item {
-      margin-bottom: $spacing-md;
+      margin-bottom: $spacing-lg;
+      padding: $spacing-md;
+      background-color: $color-background;
+      border-radius: $border-radius-sm;
       line-height: 1.6;
 
       &:last-child {
@@ -354,12 +392,20 @@
         color: $color-text-primary;
         font-weight: $font-weight-medium;
         margin-bottom: $spacing-xs;
+        font-size: $font-size-base;
       }
 
       .example-ja {
         color: $color-text-secondary;
         font-size: $font-size-sm;
       }
+    }
+  }
+
+  .sidebar-section {
+    &:not(:last-child) {
+      padding-bottom: $spacing-lg;
+      border-bottom: 1px solid rgba($color-primary, 0.2);
     }
   }
 
@@ -373,26 +419,24 @@
   }
 
   .debug-logs {
-    background-color: $color-background-tertiary;
-    border: 1px solid $color-border;
-    border-radius: $border-radius-sm;
-    padding: $spacing-sm;
-    margin-top: $spacing-md;
-
     &__title {
-      margin: 0 0 $spacing-xs 0;
-      font-size: $font-size-sm;
-      font-weight: $font-weight-medium;
-      color: $color-text-secondary;
+      margin: 0 0 $spacing-sm 0;
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $color-text-primary;
     }
 
     &__content {
       margin: 0;
+      padding: $spacing-md;
+      background-color: $color-background;
+      border-radius: $border-radius-sm;
       font-family: $font-family-mono;
       font-size: $font-size-xs;
       color: $color-text-secondary;
       white-space: pre-wrap;
       word-break: break-all;
+      line-height: 1.5;
     }
   }
 </style>
