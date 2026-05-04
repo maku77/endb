@@ -24,6 +24,40 @@
     loadData();
   });
 
+  // Keyboard shortcut (Ctrl+K / Cmd+K) for adding new word
+  $effect(() => {
+    function handleKeydown(event: KeyboardEvent) {
+      // 認証チェック
+      if (!isAuthenticated) return;
+
+      // フォーム表示中は無効
+      if (showForm) return;
+
+      // 入力フィールド内では無効
+      const target = event.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      // Ctrl+K または Cmd+K の検出
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        handleNewWord();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  });
+
   // Functions
   async function loadData() {
     try {
@@ -100,7 +134,7 @@
     <h1 class="page-title">単語一覧</h1>
     {#if isAuthenticated}
       <button class="btn btn--primary" onclick={handleNewWord}>
-        + 新しい単語を追加
+        + 新しい単語を追加 <span class="shortcut-hint">(⌘K / Ctrl+K)</span>
       </button>
     {/if}
   </header>
@@ -161,7 +195,7 @@
         <p>単語が登録されていません。</p>
         {#if isAuthenticated}
           <button class="btn btn--primary" onclick={handleNewWord}>
-            最初の単語を登録する
+            最初の単語を登録する <span class="shortcut-hint">(⌘K / Ctrl+K)</span>
           </button>
         {/if}
       </div>
@@ -293,6 +327,16 @@
 
     &--secondary {
       @include button-secondary;
+    }
+  }
+
+  .shortcut-hint {
+    font-size: $font-size-xs;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: $font-weight-normal;
+
+    @media (max-width: 768px) {
+      display: none;
     }
   }
 </style>
